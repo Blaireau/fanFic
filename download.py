@@ -1,6 +1,11 @@
 import requests
-import beautifulsoup4
+from bs4 import BeautifulSoup
 
-print("Hello !")
-r = requests.get("https://www.fanfiction.net/s/6910226/1/Harry-Potter-et-les-M%C3%A9thodes-de-la-Rationalit%C3%A9")
-print(r.text)
+# Parameters
+base_url = "https://www.fanfiction.net/s/"
+id_fanfic = "6910226"
+
+# Doing the request !
+r = requests.get(base_url+id_fanfic)
+soup = BeautifulSoup(r.text, features="html.parser")
+print(soup.prettify())
