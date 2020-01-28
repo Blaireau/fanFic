@@ -52,9 +52,19 @@ for key in chap_dict:
     parsed_page = BeautifulSoup(requested_page.text, features="html.parser")
     # This line gets all the storytext, and convert it in a list. We will use this to build a "list of list" with all
     # the fanfic text. And then we will build our out PDF.
-    all_chapters.append((chap_dict["1"], parsed_page.find("div", {"id": "storytext"}).find_all('p')))
+    all_chapters.append((chap_dict[key], parsed_page.find("div", {"id": "storytext"}).find_all('p')))
     # In order to be a little bit polite, we sleep a little. We don't "gotta go fast"...
     sleep(5)
 
-print(all_chapters)
+temp_file = open("temp.txt", "w")
+
+for i in range(len(all_chapters)):
+    temp_file.write('Title : '+str(all_chapters[i][0])+'\nContent : \n')
+    for j in range(len(all_chapters[i][1])):
+        temp_file.write(str(all_chapters[i][1][j]))
+    temp_file.write('\n\n')
+
+temp_file.close()
+
+#print(all_chapters)
 print(chap_dict)
