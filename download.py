@@ -21,13 +21,18 @@ optionoutput_regex = re.compile('</option>')
 chap_dict = {}
 # List of list for all the chapters (if multiple chapters)
 all_chapters = []
+# We don't want to stress the website. Let's sleep a little.
+time_sleep = 1
 
 # Doing the request ! TODO : Error catching
+print("Getting the page at : "+full_fanfic_url)
 requested_page = requests.get(full_fanfic_url)
 parsed_page = BeautifulSoup(requested_page.text, features="html.parser")
+print("Page got and parsed by BS")
 
 # Now we build the chapters list
 # Getting the chapters list in a format we can manipulate further
+print("Building chapter list")
 chapters = str(parsed_page.find('select').find('option')).split('<option')
 
 # Parsing the chapters list to build the dict we are going to use when building the pdf
@@ -46,25 +51,30 @@ for num_chap in chapters:
 # TODO : Maybe output in another format ? LaTex ? etc...
 # TODO : Check if the fanfic has only one chapter...
 
+print("Got "+str(len(chap_dict))+" chapters. Let's download that !")
+max_chapter = len(chap_dict)
 for key in chap_dict:
+    print("Getting chapter "+str(len(chap_dict)-max_chapter+1)+" on "+str(len(chap_dict)))
     chapter_url = full_fanfic_url +'/'+key
     requested_page = requests.get(chapter_url)
     parsed_page = BeautifulSoup(requested_page.text, features="html.parser")
     # This line gets all the storytext, and convert it in a list. We will use this to build a "list of list" with all
     # the fanfic text. And then we will build our out PDF.
-    all_chapters.append((chap_dict[key], parsed_page.find("div", {"id": "storytext"}).find_all('p')))
+    all_chapters.append((chap_dict[key], parsed_page.find("div", {"id": "storytext"}).contents))
+    print("Got chapter ! Going to sleep a little. No stress !")
     # In order to be a little bit polite, we sleep a little. We don't "gotta go fast"...
-    sleep(5)
+    sleep(time_sleep)
+    max_chapter -= 1
 
-temp_file = open("temp.txt", "w")
+print("All chapters of fanfic retrieved ! Let's convert that in PDF !")
+
+temp_file = open("temp.txt", "w", encoding='utf-8')
 
 for i in range(len(all_chapters)):
-    temp_file.write('Title : '+str(all_chapters[i][0])+'\nContent : \n')
-    for j in range(len(all_chapters[i][1])):
-        temp_file.write(str(all_chapters[i][1][j]))
+    temp_file.write('Title : '+str(all_chapters[i][0])+'\nContent : \n'+str(all_chapters[i][1]))
     temp_file.write('\n\n')
 
 temp_file.close()
 
 #print(all_chapters)
-print(chap_dict)
+#print(chap_dict)
