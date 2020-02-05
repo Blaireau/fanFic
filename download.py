@@ -4,6 +4,7 @@
 import requests
 import re
 from fpdf import FPDF, HTMLMixin
+from pyPdf import PdfFileWriter
 from bs4 import BeautifulSoup
 from time import sleep
 
@@ -72,6 +73,7 @@ for key in chap_dict:
 
 print("All chapters of fanfic retrieved ! Let's convert that in PDF !")
 
+# TODO : Test the output with "pyPDF"
 pdf_out = MyFPDF()
 pdf_out.add_page()
 
@@ -79,7 +81,7 @@ for i in range(len(all_chapters)):
     pdf_out.write_html(all_chapters[i][0])
     pdf_out.write_html("<br><br>")
     for j in range(len(all_chapters[i][1])):
-        # # TODO : May be find a way to replacement better ?
+        # # TODO : May be find better way to replace character ?
         pdf_out.write_html(str(all_chapters[i][1][j]).replace("<strong>", "<B>").replace("</strong>", "</B>").replace("<em>", "<i>").replace("</em>", "</i>"))
 
 # Et voilà !
