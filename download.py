@@ -3,12 +3,12 @@
 # TODO : For the moment we are working directly in RAM. See if we don't consume too much resources.
 import requests
 import re
-from fpdf import FPDF, HTMLMixin
-from pyPdf import PdfFileWriter
 from bs4 import BeautifulSoup
 from time import sleep
+from odf.opendocument import OpenDocumentText
+from odf.text import P
 
-# Parameters
+# General Parameters
 # Parameters for the URL base
 base_url = "https://www.fanfiction.net/s/"
 # TODO : Make it "cli" friendly !
@@ -25,9 +25,6 @@ chap_dict = {}
 all_chapters = []
 # We don't want to stress the website. Let's sleep a little.
 time_sleep = 1
-
-class MyFPDF(FPDF, HTMLMixin):
-    pass
 
 # Doing the request ! TODO : Error catching
 print("Getting the page at : " + full_fanfic_url)
@@ -52,7 +49,7 @@ for num_chap in chapters:
         chap_dict[tmp_lst[0][pos.end():]] = tmp_lst[1]
 
 # Now we have a nice dict, with the chapter number and his name.
-# We have to call each page in order to get the text, then we can build the output pdf.
+# We have to call each page in order to get the text, then we can build the output file.
 # TODO : Maybe output in another format ? LaTex ? etc...
 # TODO : Check if the fanfic has only one chapter...
 
@@ -71,23 +68,16 @@ for key in chap_dict:
     sleep(time_sleep)
     max_chapter -= 1
 
-print("All chapters of fanfic retrieved ! Let's convert that in PDF !")
+print("All chapters of fanfic retrieved ! Let's convert that in an output file (here ODF) !")
 
-# TODO : Test the output with "pyPDF"
-pdf_out = MyFPDF()
-pdf_out.add_page()
+# Let's output everything in a ODF doc
+output_doc = OpenDocumentText()
 
 for i in range(len(all_chapters)):
-    pdf_out.write_html(all_chapters[i][0])
-    pdf_out.write_html("<br><br>")
+    p = P(all_chapters[i][0])
+    output_doc.text.addElement(p)
     for j in range(len(all_chapters[i][1])):
-        # # TODO : May be find better way to replace character ?
-        pdf_out.write_html(str(all_chapters[i][1][j]).replace("<strong>", "<B>").replace("</strong>", "</B>").replace("<em>", "<i>").replace("</em>", "</i>"))
+        p = P(all_chapters[i][0][j])
+        output_doc.text.addElement(p)
 
-# Et voilà !
-# The next line works, but needs a modification in the "fpdf.py" file at line 1170.
-# pdf_out.output("testdemo.pdf", "F").encode("utf-8")
-# The modification needed is the following :
-# p = self.pages[n].encode("utf-8") if PY3K else self.pages[n]
-# According to the doc of "fpdf" this should work. But in reality, nope...
-pdf_out.output(dest="S").encode("latin1")
+output_doc.save("test_ouput.odt", True)
