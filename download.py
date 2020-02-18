@@ -6,7 +6,9 @@ import re
 from bs4 import BeautifulSoup
 from time import sleep
 from odf.opendocument import OpenDocumentText
+from odf.style import Style, ParagraphProperties
 from odf.text import P
+from odf import teletype
 
 # General Parameters
 # Parameters for the URL base
@@ -73,11 +75,21 @@ print("All chapters of fanfic retrieved ! Let's convert that in an output file (
 # Let's output everything in a ODF doc
 output_doc = OpenDocumentText()
 
-for i in range(len(all_chapters)):
-    p = P(all_chapters[i][0])
-    output_doc.text.addElement(p)
-    for j in range(len(all_chapters[i][1])):
-        p = P(all_chapters[i][0][j])
-        output_doc.text.addElement(p)
+justifystyle = Style(name="justified", family="paragraph")
+justifystyle.addElement(ParagraphProperties(attributes={"textalign": "justify"}))
 
-output_doc.save("test_ouput.odt", True)
+my_style = output_doc.styles
+my_style.addElement(justifystyle)
+
+for i in range(len(all_chapters)):
+    p_text = str(all_chapters[i][0])
+    p_element = P(stylename=justifystyle)
+    teletype.addTextToElement(p_element, p_text)
+    output_doc.text.addElement(p_element, p_text)
+    for j in range(len(all_chapters[i][1])):
+        p_text = str(all_chapters[i][1][j])
+        p_element = P(stylename=justifystyle)
+        teletype.addTextToElement(p_element, p_text)
+        output_doc.text.addElement(p_element,p_text)
+
+output_doc.save("test_ouput.odt")
