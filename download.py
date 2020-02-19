@@ -5,10 +5,8 @@ import requests
 import re
 from bs4 import BeautifulSoup
 from time import sleep
-from odf.opendocument import OpenDocumentText
-from odf.style import Style, ParagraphProperties
-from odf.text import P
-from odf import teletype
+from fpdf import FPDF, HTMLMixin
+from pyPdf import PdfFileWriter
 
 # General Parameters
 # Parameters for the URL base
@@ -27,6 +25,9 @@ chap_dict = {}
 all_chapters = []
 # We don't want to stress the website. Let's sleep a little.
 time_sleep = 1
+
+class MyFPDF(FPDF, HTMLMixin):
+    pass
 
 # Doing the request ! TODO : Error catching
 print("Getting the page at : " + full_fanfic_url)
@@ -70,26 +71,24 @@ for key in chap_dict:
     sleep(time_sleep)
     max_chapter -= 1
 
-print("All chapters of fanfic retrieved ! Let's convert that in an output file (here ODF) !")
+print("All chapters of fanfic retrieved ! Let's convert that in an output file (here PDF) !")
 
-# Let's output everything in a ODF doc
-output_doc = OpenDocumentText()
-
-justifystyle = Style(name="justified", family="paragraph")
-justifystyle.addElement(ParagraphProperties(attributes={"textalign": "justify"}))
-
-my_style = output_doc.styles
-my_style.addElement(justifystyle)
+# Let's output everything in a PDF doc
+# TODO : Test the output with "pyPDF"
+pdf_out = MyFPDF()
+pdf_out.add_page()
 
 for i in range(len(all_chapters)):
-    p_text = str(all_chapters[i][0])
-    p_element = P(stylename=justifystyle)
-    teletype.addTextToElement(p_element, p_text)
-    output_doc.text.addElement(p_element, p_text)
+    pdf_out.write_html(all_chapters[i][0])
+    pdf_out.write_html("<br><br>")
     for j in range(len(all_chapters[i][1])):
-        p_text = str(all_chapters[i][1][j])
-        p_element = P(stylename=justifystyle)
-        teletype.addTextToElement(p_element, p_text)
-        output_doc.text.addElement(p_element,p_text)
+        # # TODO : May be find better way to replace character ?
+        pdf_out.write_html(str(all_chapters[i][1][j]).replace("<strong>", "<B>").replace("</strong>", "</B>").replace("<em>", "<i>").replace("</em>", "</i>"))
 
-output_doc.save("test_ouput.odt")
+# Et voilà !
+# The next line works, but needs a modification in the "fpdf.py" file at line 1170.
+# pdf_out.output("testdemo.pdf", "F").encode("utf-8")
+# The modification needed is the following :
+# p = self.pages[n].encode("utf-8") if PY3K else self.pages[n]
+# According to the doc of "fpdf" this should work. But in reality, nope...
+pdf_out.output(dest="S").encode("latin1")
