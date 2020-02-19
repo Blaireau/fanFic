@@ -3,8 +3,6 @@
 # TODO : For the moment we are working directly in RAM. See if we don't consume too much resources.
 import requests
 import re
-from fpdf import FPDF, HTMLMixin
-from pyPdf import PdfFileWriter
 from bs4 import BeautifulSoup
 from time import sleep
 
@@ -25,9 +23,6 @@ chap_dict = {}
 all_chapters = []
 # We don't want to stress the website. Let's sleep a little.
 time_sleep = 1
-
-class MyFPDF(FPDF, HTMLMixin):
-    pass
 
 # Doing the request ! TODO : Error catching
 print("Getting the page at : " + full_fanfic_url)
@@ -71,23 +66,4 @@ for key in chap_dict:
     sleep(time_sleep)
     max_chapter -= 1
 
-print("All chapters of fanfic retrieved ! Let's convert that in PDF !")
-
-# TODO : Test the output with "pyPDF"
-pdf_out = MyFPDF()
-pdf_out.add_page()
-
-for i in range(len(all_chapters)):
-    pdf_out.write_html(all_chapters[i][0])
-    pdf_out.write_html("<br><br>")
-    for j in range(len(all_chapters[i][1])):
-        # # TODO : May be find better way to replace character ?
-        pdf_out.write_html(str(all_chapters[i][1][j]).replace("<strong>", "<B>").replace("</strong>", "</B>").replace("<em>", "<i>").replace("</em>", "</i>"))
-
-# Et voilà !
-# The next line works, but needs a modification in the "fpdf.py" file at line 1170.
-# pdf_out.output("testdemo.pdf", "F").encode("utf-8")
-# The modification needed is the following :
-# p = self.pages[n].encode("utf-8") if PY3K else self.pages[n]
-# According to the doc of "fpdf" this should work. But in reality, nope...
-pdf_out.output(dest="S").encode("latin1")
+print("All chapters of fanfic retrieved ! Let's convert that on nice file !")
