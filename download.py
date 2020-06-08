@@ -75,21 +75,29 @@ print("All chapters of fanfic retrieved ! Let's convert that in an output file (
 # Let's output everything in a ODF doc
 output_doc = OpenDocumentText()
 
-justifystyle = Style(name="justified", family="paragraph")
-justifystyle.addElement(ParagraphProperties(attributes={"textalign": "justify"}))
+# Style definition
+# Justifying
+justifyStyle = Style(name="justified", family="paragraph")
+justifyStyle.addElement(ParagraphProperties(attributes={"textalign": "justify"}))
+# Title
+#titleStyle= Style(name="centered", family="paragraph")
+#titleStyle.addElement(ParagraphProperties(attributes={"size": "24"}))
+# Paragraph
 
-my_style = output_doc.styles
-my_style.addElement(justifystyle)
+my_styles = output_doc.styles
+my_styles.addElement(justifyStyle)
+#my_styles.addElement(titleStyle)
 
 for i in range(len(all_chapters)):
     p_text = str(all_chapters[i][0])
-    p_element = P(stylename=justifystyle)
+    print(str(all_chapters[i][0]))
+    p_element = P(stylename=justifyStyle)
     teletype.addTextToElement(p_element, p_text)
     output_doc.text.addElement(p_element, p_text)
     for j in range(len(all_chapters[i][1])):
         p_text = str(all_chapters[i][1][j])
-        p_element = P(stylename=justifystyle)
+        p_element = P(stylename=justifyStyle)
         teletype.addTextToElement(p_element, p_text)
-        output_doc.text.addElement(p_element,p_text)
+        output_doc.text.addElement(p_element, p_text)
 
-output_doc.save("test_ouput.odt")
+output_doc.save("test_output.odt")
