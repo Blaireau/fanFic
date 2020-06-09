@@ -6,7 +6,7 @@ import re
 from bs4 import BeautifulSoup
 from time import sleep
 from odf.opendocument import OpenDocumentText
-from odf.style import Style, ParagraphProperties
+from odf.style import Style, ParagraphProperties, TextProperties
 from odf.text import P
 from odf import teletype
 
@@ -16,6 +16,8 @@ base_url = "https://www.fanfiction.net/s/"
 # TODO : Make it "cli" friendly !
 # id_fanfic = "6910226" # --> HP et les méthodes de la rationnalité pas utilisé pour tests.
 id_fanfic = "13096584"  # --> Random fanfic pour test (15 chapitres, 103529 mots, autour de Killer Instinct)
+# id_fanfic = "13371140" # This fanfic is problematic...
+
 # We build the full url, since we are going to need it !
 full_fanfic_url = base_url + id_fanfic
 # Regex in order to catch chapters name (awful hack done quick...) and cleaning some outputs
@@ -33,6 +35,11 @@ print("Getting the page at : " + full_fanfic_url)
 requested_page = requests.get(full_fanfic_url)
 parsed_page = BeautifulSoup(requested_page.text, features="html.parser")
 print("Page got and parsed by BS")
+
+# What's the name of the fanfic ?
+fanfic_name = (parsed_page.find('b', class_='xcontrast_txt').getText())
+print("The name of the fanfic is : "+fanfic_name+". Hope that's the one you want !")
+print(parsed_page.find_all('a', class_='xcontrast_txt'))
 
 # Now we build the chapters list
 # Getting the chapters list in a format we can manipulate further
@@ -76,28 +83,39 @@ print("All chapters of fanfic retrieved ! Let's convert that in an output file (
 output_doc = OpenDocumentText()
 
 # Style definition
-# Justifying
-justifyStyle = Style(name="justified", family="paragraph")
-justifyStyle.addElement(ParagraphProperties(attributes={"textalign": "justify"}))
 # Title
-#titleStyle= Style(name="centered", family="paragraph")
-#titleStyle.addElement(ParagraphProperties(attributes={"size": "24"}))
+titleStyle= Style(name="my_title", family="paragraph")
+titleStyle.addElement(ParagraphProperties(attributes={"textalign": "center"}))
+titleStyle.addElement(TextProperties(attributes={"fontsize": "24pt"}))
 # Paragraph
+pStyle = Style(name="my_paragraph", family="paragraph")
+pStyle.addElement(ParagraphProperties(attributes={"textalign": "justify"}))
+# Paragraph with break_pages
+p_with_break = Style(name="WithBreak", parentstylename="Standard", family="paragraph")
+p_with_break.addElement(ParagraphProperties(breakbefore="page"))
 
 my_styles = output_doc.styles
-my_styles.addElement(justifyStyle)
-#my_styles.addElement(titleStyle)
+my_styles.addElement(pStyle)
+my_styles.addElement(titleStyle)
+my_styles.addElement(p_with_break)
 
 for i in range(len(all_chapters)):
     p_text = str(all_chapters[i][0])
-    print(str(all_chapters[i][0]))
-    p_element = P(stylename=justifyStyle)
+    print("Chapter "+p_text+" is being treated")
+    p_element = P(stylename=titleStyle)
     teletype.addTextToElement(p_element, p_text)
     output_doc.text.addElement(p_element, p_text)
     for j in range(len(all_chapters[i][1])):
         p_text = str(all_chapters[i][1][j])
-        p_element = P(stylename=justifyStyle)
-        teletype.addTextToElement(p_element, p_text)
-        output_doc.text.addElement(p_element, p_text)
+        # If we are at the end of a chapter, add a page break
+        if j == (len(all_chapters[i][1])-1):
+            p_element = P(stylename=p_with_break)
+            teletype.addTextToElement(p_element, p_text)
+            output_doc.text.addElement(p_element, p_text)
+        else:
+            p_element = P(stylename=pStyle)
+            teletype.addTextToElement(p_element, p_text)
+            output_doc.text.addElement(p_element, p_text)
+    print("Next Chapter!")
 
-output_doc.save("test_output.odt")
+output_doc.save(fanfic_name, True)
