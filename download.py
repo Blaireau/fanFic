@@ -23,6 +23,7 @@ full_fanfic_url = base_url + id_fanfic
 # Regex in order to catch chapters name (awful hack done quick...) and cleaning some outputs
 chap_regex = re.compile('value="')
 optionoutput_regex = re.compile('</option>')
+authorname_re = re.compile('/u/')
 # Dictionnary for the chapters
 chap_dict = {}
 # List of list for all the chapters (if multiple chapters)
@@ -39,7 +40,13 @@ print("Page got and parsed by BS")
 # What's the name of the fanfic ?
 fanfic_name = (parsed_page.find('b', class_='xcontrast_txt').getText())
 print("The name of the fanfic is : "+fanfic_name+". Hope that's the one you want !")
-print(parsed_page.find_all('a', class_='xcontrast_txt'))
+# Giving credit to the author !
+temp_trash = parsed_page.find_all('a', class_='xcontrast_txt')
+for i in temp_trash:
+    if authorname_re.search(str(i)):
+        author_name = i.getText()
+del temp_trash
+print("Do not forget to thanks "+author_name+" for it's work !")
 
 # Now we build the chapters list
 # Getting the chapters list in a format we can manipulate further
