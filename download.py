@@ -16,7 +16,8 @@ base_url = "https://www.fanfiction.net/s/"
 # TODO : Make it "cli" friendly !
 # id_fanfic = "6910226" # --> HP et les méthodes de la rationnalité pas utilisé pour tests.
 id_fanfic = "13096584"  # --> Random fanfic pour test (15 chapitres, 103529 mots, autour de Killer Instinct)
-# id_fanfic = "13371140" # This fanfic is problematic...
+# id_fanfic = "13371140" # The name of the fanfic is causing trouble when writing it to the disk
+# TODO : Solve this bug (i.e. allow only valid char in the name of the fanfic)
 
 # We build the full url, since we are going to need it !
 full_fanfic_url = base_url + id_fanfic
@@ -91,7 +92,7 @@ output_doc = OpenDocumentText()
 
 # Style definition
 # Title
-titleStyle= Style(name="my_title", family="paragraph")
+titleStyle = Style(name="my_title", family="paragraph")
 titleStyle.addElement(ParagraphProperties(attributes={"textalign": "center"}))
 titleStyle.addElement(TextProperties(attributes={"fontsize": "24pt"}))
 # Paragraph
